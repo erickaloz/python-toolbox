@@ -26,7 +26,7 @@ class stochasticTurbulence:
         self.D = D
         self.R = D/2.0
         
-    def readBTS(self,pathToBinary, zHub):
+    def readBTSHead(self,pathToBinary,zHub):
         """
         Read TurbSim Binary FF.
         
@@ -53,6 +53,38 @@ class stochasticTurbulence:
             self.nZ, self.nY, self.nTower, self.nTimeSteps = \
                                     struct.unpack('i'*4,fileContent[2:18])
             self.dZ, self.dY, self.dT, self.uHub, dummy, self.zBot = \
+                                    struct.unpack('f'*6,fileContent[18:42])
+            self.nSeconds = self.nTimeSteps * self.dT
+
+            self.zHub = zHub ## KS -- adding b/c HubHeight specified in TurbSim file is NOT the real HH
+        
+    def readBTS(self,pathToBinary, zHub):
+        """
+        Read TurbSim Binary FF.
+        
+        Parameters
+        ----------
+        pathToBinaries : string,
+            where to find binary outputs        
+        """      
+        fPath = os.path.join(pathToBinary,"{0}.bts".format(self.prefix))
+        
+        filePath = glob.glob(fPath)        
+        
+        if len(filePath)==0:
+            raise Exception("Could not find file at {0}.".format(fPath))        
+
+        print('Opening file {0}...'.format(filePath[0]))
+        self.filePath = filePath
+        self.fileDir  = pathToBinary
+        components = ['u','v','w']
+
+        with open(filePath[0], mode='rb') as file:            
+            fileContent = file.read()
+
+            self.nZ, self.nY, self.nTower, self.nTimeSteps = \
+                                    struct.unpack('i'*4,fileContent[2:18])
+            self.dZ, self.dY, self.dT, self.uHub, self.RefHt, self.zBot = \
                                     struct.unpack('f'*6,fileContent[18:42])
             self.nSeconds = self.nTimeSteps * self.dT
 

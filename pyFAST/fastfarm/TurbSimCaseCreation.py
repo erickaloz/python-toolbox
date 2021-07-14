@@ -57,24 +57,60 @@ class TSCaseCreation:
         self.x = x
         self.y = y
         self.z = z
-
-    def discretization(self,Vhub,TI,Shear):
         
-        self.URef = Vhub
-        self.TI = TI
-        self.PLexp = Shear
+    def Inflow(self,params):
+        self.seed = params['Val']['Seed']
+    
+        self.URef = params['Val']['Vhub']
+        self.TI = params['Val']['TI']
+        self.PLexp = params['Val']['Shear']
+        #self.Veer = params['Val']['Veer']
+        #self.CohExp = params['Val']['Gamma']
+        
+        #comps=['u','v','w']
+        #self.a={comp:{} for comp in comps}
+        #self.b={comp:{} for comp in comps}
+        #self.PC={comp:{} for comp in comps}
+        
+        #self.sigma={comp:{} for comp in comps}
+        #self.L={comp:{} for comp in comps}
+        #for comp in comps:
+        #    self.a[comp] = paramsuvw[comp]['a']
+        #    self.b[comp] = paramsuvw[comp]['b']
+        #    self.PC[comp] = paramsuvw[comp]['PC']
+        #    
+        #    self.sigma[comp] = paramsuvw[comp]['Sigma']
+        #    self.L[comp] = paramsuvw[comp]['L']
+
+    def discretization_low(self,Vhub,Shear,Cmeander=1.9):
+        
+        self.dt = 1.0/(2.0*self.fmax)
+        
+        dy_des = Cmeander*self.D*Vhub/150.0
+        
+        
+        dyHigh = self.cmax
+        dzHigh = self.cmax
+        
+        self.dy=round(dy_des/dyHigh)*dyHigh
+        self.dz=self.dy
+    
+    def discretization_high(self,Vhub,Shear):
         
         self.dt = 1.0/(2.0*self.fmax)
         self.dy = self.cmax
         self.dz = self.cmax
         
-    def domainSize(self,zbot,Cmeander=1.9):
+    def domainSize_low(self,zbot,Cmeander=1.9):
     
-        ymin = min(self.y)-2.23313*Cmeander*self.D/2
-        ymax = max(self.y)+2.23313*Cmeander*self.D/2
+        ###HACKHACKHACK!!!!!!
+        ymin = -1.5*self.D-2.23313*Cmeander*self.D/2.0 #min(self.y)-
+        ymax = 1.5*self.D+2.23313*Cmeander*self.D/2.0 #max(self.y)+
+        
+        print(ymin,ymax)
         
         width_des = ymax-ymin
-        height_des = self.RefHt+self.D/2+2.23313*Cmeander*self.D/2
+        height_des = self.RefHt+self.D/2.0+2.23313*Cmeander*self.D/2-zbot
         
         self.ny = round(width_des/self.dy)+1
         self.nz = round(height_des/self.dz)+1
@@ -85,7 +121,21 @@ class TSCaseCreation:
         Dgrid=min(self.Height,self.Width)
         self.HubHt = zbot-0.5*Dgrid+self.Height
         
-def WriteTSFile(fileIn,fileOut,params,NewFile=True):
+    def domainSize_high(self,zbot,Cmeander=1.9):
+        
+        width_des = 1.2*self.D
+        height_des = self.RefHt+1.2*self.D/2.0-zbot
+        
+        self.ny = round(width_des/self.dy)+1
+        self.nz = round(height_des/self.dz)+1
+        
+        self.Width = self.dy*(self.ny-1)
+        self.Height = self.dz*(self.nz-1)
+        
+        Dgrid=min(self.Height,self.Width)
+        self.HubHt = zbot-0.5*Dgrid+self.Height ###MIGHT NEED TO ADJUST TO ENSURE TIME SERIES IS BEING PULLED FROM AND APPLIED TO SAME LOCATION
+        
+def WriteTSFile(fileIn,fileOut,params,nTurb,res,NewFile=True):
     """ Write a TurbSim primary input file, 
 
     """
@@ -98,7 +148,7 @@ def WriteTSFile(fileIn,fileOut,params,NewFile=True):
             f.write('for Certification Test #1 (Kaimal Spectrum, formatted FF files).\n')
             f.write('---------Runtime Options-----------------------------------\n')
             f.write('False\tEcho\t\t- Echo input data to <RootName>.ech (flag)\n')
-            f.write('123456\tRandSeed1\t\t- First random seed  (-2147483648 to 2147483647)\n')
+            f.write('{:.0f}\tRandSeed1\t\t- First random seed  (-2147483648 to 2147483647)\n'.format(np.float(params.seed)))
             f.write('RanLux\tRandSeed2\t\t- Second random seed (-2147483648 to 2147483647) for intrinsic pRNG, or an alternative pRNG: "RanLux" or "RNSNLW"\n')
             f.write('False\tWrBHHTP\t\t- Output hub-height turbulence parameters in binary form?  (Generates RootName.bin)\n')
             f.write('False\tWrFHHTP\t\t- Output hub-height turbulence parameters in formatted form?  (Generates RootName.dat)\n')
@@ -115,7 +165,7 @@ def WriteTSFile(fileIn,fileOut,params,NewFile=True):
             f.write('{:.0f}\tNumGrid_Z\t\t- Vertical grid-point matrix dimension\n'.format(params.nz))
             f.write('{:.0f}\tNumGrid_Y\t\t- Horizontal grid-point matrix dimension\n'.format(params.ny))
             f.write('{:.6f}\tTimeStep\t\t- Time step [seconds]\n'.format(params.dt))
-            f.write('50.00\tAnalysisTime\t\t- Length of analysis time series [seconds] (program will add time if necessary: AnalysisTime = MAX(AnalysisTime, UsableTime+GridWidth/MeanHHWS) )\n')
+            f.write('60.00\tAnalysisTime\t\t- Length of analysis time series [seconds] (program will add time if necessary: AnalysisTime = MAX(AnalysisTime, UsableTime+GridWidth/MeanHHWS) )\n')
             f.write('"ALL"\tUsableTime\t\t- Usable length of output time series [seconds] (program will add GridWidth/MeanHHWS seconds unless UsableTime is "ALL")\n')
             f.write('{:.3f}\tHubHt\t\t- Hub height [m] (should be > 0.5*GridHeight)\n'.format(params.HubHt))
             f.write('{:.3f}\tGridHeight\t\t- Grid height [m]\n'.format(params.Height))
@@ -124,18 +174,22 @@ def WriteTSFile(fileIn,fileOut,params,NewFile=True):
             f.write('0\tHFlowAng\t\t- Horizontal mean flow (skew) angle [degrees]\n')
             f.write('\n')
             f.write('--------Meteorological Boundary Conditions-------------------\n')
-            f.write('"IECKAI"\tTurbModel\t\t- Turbulence model ("IECKAI","IECVKM","GP_LLJ","NWTCUP","SMOOTH","WF_UPW","WF_07D","WF_14D","TIDAL","API","IECKAI","TIMESR", or "NONE")\n')
-            f.write('"unused"\tUserFile\t\t- Name of the file that contains inputs for user-defined spectra or time series inputs (used only for "IECKAI" and "TIMESR" models)\n')
+            if res == 'low':
+                f.write('"IECKAI"\tTurbModel\t\t- Turbulence model ("IECKAI","IECVKM","GP_LLJ","NWTCUP","SMOOTH","WF_UPW","WF_07D","WF_14D","TIDAL","API","IECKAI","TIMESR", or "NONE")\n')
+                f.write('"unused"\tUserFile\t\t- Name of the file that contains inputs for user-defined spectra or time series inputs (used only for "IECKAI" and "TIMESR" models)\n')
+            else:
+                f.write('"TIMESR"\tTurbModel\t\t- Turbulence model ("IECKAI","IECVKM","GP_LLJ","NWTCUP","SMOOTH","WF_UPW","WF_07D","WF_14D","TIDAL","API","IECKAI","TIMESR", or "NONE")\n')
+                f.write('"USRTimeSeries_T{0}.txt"\tUserFile\t\t- Name of the file that contains inputs for user-defined spectra or time series inputs (used only for "IECKAI" and "TIMESR" models)\n'.format(nTurb))
             f.write('1\tIECstandard\t\t- Number of IEC 61400-x standard (x=1,2, or 3 with optional 61400-1 edition number (i.e. "1-Ed2") )\n')
-            f.write('"{:.3f}\t"\tIECturbc\t\t- IEC turbulence characteristic ("A", "B", "C" or the turbulence intensity in percent) ("KHTEST" option with NWTCUP model, not used for other models)\n'.format(params.TI))
+            f.write('"{:1s}"\tIECturbc\t\t- IEC turbulence characteristic ("A", "B", "C" or the turbulence intensity in percent) ("KHTEST" option with NWTCUP model, not used for other models)\n'.format(params.TI))
             f.write('"NTM"\tIEC_WindType\t\t- IEC turbulence type ("NTM"=normal, "xETM"=extreme turbulence, "xEWM1"=extreme 1-year wind, "xEWM50"=extreme 50-year wind, where x=wind turbine class 1, 2, or 3)\n')
             f.write('"default"\tETMc\t\t- IEC Extreme Turbulence Model "c" parameter [m/s]\n')
             f.write('"PL"\tWindProfileType\t\t- Velocity profile type ("LOG";"PL"=power law;"JET";"H2L"=Log law for TIDAL model;"API";"PL";"TS";"IEC"=PL on rotor disk, LOG elsewhere; or "default")\n')
             f.write('"PowerLaw_6ms02.dat"\tProfileFile\t\t- Name of the file that contains input profiles for WindProfileType="PL" and/or TurbModel="USRVKM" [-]\n')
             f.write('{:.3f}\tRefHt\t\t- Height of the reference velocity (URef) [m]\n'.format(params.RefHt))
-            f.write('{:.3f}\tURef\t\t- Mean (total) velocity at the reference height [m/s] (or "default" for JET velocity profile) [must be 1-hr mean for API model; otherwise is the mean over AnalysisTime seconds]\n'.format(params.URef))
+            f.write('{:.3f}\tURef\t\t- Mean (total) velocity at the reference height [m/s] (or "default" for JET velocity profile) [must be 1-hr mean for API model; otherwise is the mean over AnalysisTime seconds]\n'.format(np.float(params.URef)))
             f.write('350\tZJetMax\t\t- Jet height [m] (used only for JET velocity profile, valid 70-490 m)\n')
-            f.write('"{:.3f}"\tPLExp\t\t- Power law exponent [-] (or "default")\n'.format(params.PLexp))
+            f.write('"{:.3f}"\tPLExp\t\t- Power law exponent [-] (or "default")\n'.format(np.float(params.PLexp)))
             f.write('"default"\tZ0\t\t- Surface roughness length [m] (or "default")\n')
             f.write('\n')
             f.write('--------Non-IEC Meteorological Boundary Conditions------------\n')
@@ -151,9 +205,9 @@ def WriteTSFile(fileIn,fileOut,params,NewFile=True):
             f.write('"IEC"\tSCMod1\t\t- u-component coherence model ("GENERAL","IEC","API","NONE", or "default")\n')
             f.write('"IEC"\tSCMod2\t\t- v-component coherence model ("GENERAL","IEC","NONE", or "default")\n')
             f.write('"IEC"\tSCMod3\t\t- w-component coherence model ("GENERAL","IEC","NONE", or "default")\n')
-            f.write('"12.0 0.000659"\tInCDec1\t- u-component coherence parameters for general or IEC models [-, m^-1] (e.g. "10.0  0.3e-3" in quotes) (or "default")\n')
-            f.write('"12.0 0.000659"\tInCDec2\t- v-component coherence parameters for general or IEC models [-, m^-1] (e.g. "10.0  0.3e-3" in quotes) (or "default")\n')
-            f.write('"12.0 0.000659"\tInCDec3\t- w-component coherence parameters for general or IEC models [-, m^-1] (e.g. "10.0  0.3e-3" in quotes) (or "default")\n')
+            f.write('"12.0 0.0003527"\tInCDec1\t- u-component coherence parameters for general or IEC models [-, m^-1] (e.g. "10.0  0.3e-3" in quotes) (or "default")\n')
+            f.write('"12.0 0.001058"\tInCDec2\t- v-component coherence parameters for general or IEC models [-, m^-1] (e.g. "10.0  0.3e-3" in quotes) (or "default")\n')
+            f.write('"12.0 0.004329"\tInCDec3\t- w-component coherence parameters for general or IEC models [-, m^-1] (e.g. "10.0  0.3e-3" in quotes) (or "default")\n')
             f.write('"0.0"\tCohExp\t\t- Coherence exponent for general model [-] (or "default")\n')
             f.write('\n')
             f.write('--------Coherent Turbulence Scaling Parameters-------------------\n')
