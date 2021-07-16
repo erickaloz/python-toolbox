@@ -5,7 +5,7 @@ def TSInputCreation(Path,totTurbs):
     import pandas as pd
     import numpy as np
     import sys
-    sys.path.append('/home/kshaler/PostProcessing/General')
+    sys.path.append('C:/Users/ELOZON/Documents/python-toolbox/pyFAST/fastfarm')
     from TurbSimCaseCreation import TSCaseCreation, WriteTSFile
 
     plt.rc("font",family="serif")

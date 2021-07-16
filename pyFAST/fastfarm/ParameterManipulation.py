@@ -70,7 +70,7 @@ def createTSParamFiles(caseNames,nSeeds,data,D,HubHt,fileOut):
         
     for b in range(nCases):
         name2=caseNames[b]
-        os.chdir(name2)
+        #os.chdir(name2)
         
         xlocs=['None']*nTurbs
         ylocs=['None']*nTurbs
@@ -81,7 +81,7 @@ def createTSParamFiles(caseNames,nSeeds,data,D,HubHt,fileOut):
         ymin=min(ylocs); ymax=max(ylocs)
         for seed in range(nSeeds):
             name3='Seed_'+str(seed)
-            os.chdir(name3)
+            #os.chdir(name3)
             print(os.getcwd())
             print('Writing TurbSim input file: ', fileOut)
             with open(fileOut, 'w') as f:
@@ -94,8 +94,8 @@ def createTSParamFiles(caseNames,nSeeds,data,D,HubHt,fileOut):
                 f.write('xlocs\t{0}\t{1}\n'.format(xmin,xmax))
                 f.write('ylocs\t{0}\t{1}\n'.format(ymin,ymax))
             
-            os.chdir('TurbSim')
-            inputCreation('..',nTurbs)
+            #os.chdir('TurbSim')
+            inputCreation('C:/Users/ELOZON/Documents/python-toolbox/pyFAST/fastfarm',nTurbs)
             
             os.chdir('../..')
             
@@ -115,7 +115,7 @@ def createFFParamFiles(caseNames,nSeeds,data,HubHt,D,fileOut):
     nTurbs = int(data[3:].shape[0]/3)
     for b in range(nCases):
         name2=caseNames[b]
-        os.chdir(name2)
+        #os.chdir(name2)
         
         xlocs=['None']*nTurbs
         ylocs=['None']*nTurbs
@@ -139,22 +139,22 @@ def createFFParamFiles(caseNames,nSeeds,data,HubHt,D,fileOut):
                 HubHt_HighTS = 148.5
                 
                 IFdata = stochasticTurbulence(D,prefix='Low')
-                IFdata.readBTS('Seed_0/TurbSim', HubHt)
+                IFdata.readBTS('C:/Users/ELOZON/Documents/python-toolbox/pyFAST/fastfarm/', HubHt)
 
                 IFdata.kHub = IFdata.z2k(HubHt)
 
                 Vhub = IFdata.u[:,IFdata.jHub,IFdata.kHub].mean()
                 
                 IFdata = stochasticTurbulence(D,prefix='Low')
-                HubHt_LowTS = IFdata.RefHt 
-                IFdata.readBTS('Seed_0/TurbSim', HubHt_LowTS)
+                HubHt_LowTS = 119 #change this
+                IFdata.readBTS('C:/Users/ELOZON/Documents/python-toolbox/pyFAST/fastfarm/', HubHt_LowTS)
 
                 IFdata.kHub = IFdata.z2k(HubHt_LowTS)
 
                 Vhub_Low = IFdata.u[:,IFdata.jHub,IFdata.kHub].mean()
                 
                 IFdata = stochasticTurbulence(D,prefix='HighT1')
-                IFdata.readBTS('Seed_0/TurbSim', HubHt_HighTS)
+                IFdata.readBTS('C:/Users/ELOZON/Documents/python-toolbox/pyFAST/fastfarm/', HubHt_HighTS)
 
                 IFdata.kHub = IFdata.z2k(HubHt_HighTS)
 
@@ -164,7 +164,7 @@ def createFFParamFiles(caseNames,nSeeds,data,HubHt,D,fileOut):
 
         for seed in range(nSeeds):
             name3='Seed_'+str(seed)
-            os.chdir(name3)
+            #os.chdir(name3)
             print(os.getcwd())
             print('Writing FFarm input file: ', fileOut)
             with open(fileOut, 'w') as f:
@@ -174,17 +174,17 @@ def createFFParamFiles(caseNames,nSeeds,data,HubHt,D,fileOut):
                 f.write('high_extent_Y\t1.2\n')
                 f.write('xlocs')
                 for turb in range(nTurbs):
-                    f.write('\t{:.3f}'.format(xlocs[turb]))
+                    f.write('\t{:.3}'.format(xlocs[turb]))
                 f.write('\n')
                 f.write('ylocs')
                 for turb in range(nTurbs):
-                    f.write('\t{:.3f}'.format(ylocs[turb]))
+                    f.write('\t{:.3}'.format(ylocs[turb]))
                 f.write('\n')
                 f.write('zlocs')
                 for turb in range(nTurbs):
-                    f.write('\t{:.3f}'.format(zlocs[turb]))
+                    f.write('\t{:.3}'.format(zlocs[turb]))
                     
-            inputCreation('.','../NREL5MW.T','TurbSim/',Vhub,Vhub_Low,Vhub_High)
+            inputCreation('.','../NREL5MW.T','C:/Users/ELOZON/Documents/python-toolbox/pyFAST/fastfarm/',Vhub,Vhub_Low,Vhub_High)
             
             os.chdir('../')
             
@@ -194,8 +194,8 @@ def copyNominalFiles(NumSeeds,NumTurbs):
     import os
     import subprocess
     
-    NomDataPath='/scratch/kshaler/FFarmSetup/Nominal'
-    TurbineDataPath=os.getcwd()+'/.'
+    NomDataPath='C:/Users/ELOZON/Documents/python-toolbox/pyFAST/fastfarm/SampleFiles/Nominal'
+    TurbineDataPath=os.getcwd()+'/'
     
     for wt in range(NumTurbs):
         fstFile=NomDataPath+'/NREL5MW_ElastoDyn.{0}.dat'.format(wt)

@@ -186,8 +186,8 @@ def WriteFFarmFile(fileIn,fileOut,params,NewFile=True):
             for wt in range(params.nTurbs):
                 f.write('{:.3f}\t{:.3f}\t{:.3f}\t"{}_WT{:d}.fst"\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\t{:.3f}\n'.format(params.x[wt],params.y[wt],params.z[wt],params.tpath,wt+1,params.X0_High[wt],params.Y0_High[wt],params.Z0_High,params.dX_High,params.dY_High,params.dZ_High))
             f.write('--- WAKE DYNAMICS ---\n')
-            f.write('{:.0f}\t\tdr                 Radial increment of radial finite-difference grid (m) [>0.0]\n'.format(params.dr)
-            f.write('{:0f}\t\tNumRadii           Number of radii in the radial finite-difference grid (-) [>=2]\n'.format(params.NumRadii)
+            f.write('{:.0f}\t\tdr                 Radial increment of radial finite-difference grid (m) [>0.0]\n'.format(params.dr))
+            f.write('{:0f}\t\tNumRadii           Number of radii in the radial finite-difference grid (-) [>=2]\n'.format(params.NumRadii))
             f.write('{:.0f}\t\tNumPlanes          Number of wake planes (-) [>=2]\n'.format(params.NumPlanes))
             f.write('DEFAULT\t\tf_c                Cut-off (corner) frequency of the low-pass time-filter for the wake advection, deflection, and meandering model (Hz) [>0.0] or DEFAULT [DEFAULT=0.0007]\n')
             f.write('DEFAULT\t\tC_HWkDfl_O         Calibrated parameter in the correction for wake deflection defining the horizontal offset at the rotor                                               (m    ) or DEFAULT [DEFAULT= 0.0  ]\n')
