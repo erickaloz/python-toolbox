@@ -12,16 +12,16 @@ from InputSetup import FFInputCreation as inputCreation
 from ParameterManipulation import createTSParamFiles, createFFParamFiles, copyNominalFiles
 from stochasticTurbulenceTools_mod import stochasticTurbulence
 
-#Taken from the Case.Creation.ipynb
+#Taken from the CaseCreation.ipynb
 
 nSeeds = 1
 HubHt = 148.84
 D=246.0
 nTurbs = 4
 Ranges = False
-workdir='C:\\Users\\ELOZON\\Documents\\python-toolbox\\pyFAST\\fastfarm'
+workdir=os.getcwd()
 if Ranges == False:
-    ParamVals = pd.read_csv(r"C:\Users\ELOZON\Documents\python-toolbox\pyFAST\fastfarm\SampleFiles\ParamValues.csv", header=None,index_col=0,delimiter=',')
+    ParamVals = pd.read_csv(os.getcwd() + '\SampleFiles\ParamValues.csv', header=None,index_col=0,delimiter=',')
     
     nCases = int(ParamVals.shape[1])
 else:
@@ -77,9 +77,9 @@ for case in ['Case00']:#caseNames:
         xlocs[wt]=float(ParamVals[case][3+wt*2])
         ylocs[wt]=float(ParamVals[case][4+wt*2])
     for seed in range(nSeeds):
-        abspath = 'C:/Users/ELOZON/Documents/python-toolbox/pyFAST/fastfarm/'.format(case,seed)
+        abspath = workdir.format(case,seed)
         
-        TSpathLow  = abspath+'Low'
+        TSpathLow  = abspath+'\Low'
         print(TSpathLow)
         IFdata = stochasticTurbulence(D,prefix=TSpathLow)
         IFdata.readBTS('.',HubHt)
