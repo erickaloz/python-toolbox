@@ -20,9 +20,15 @@ D=246.0
 nTurbs = 4
 Ranges = False
 workdir=os.getcwd()
+
+indexes = ['TI', 'Vhub', 'Shear', 'T1x-locs', 'T1y-locs', 'T2x-locs', 'T2y-locs', 'T3x-locs', 'T3y-locs', 'T4x-locs', 'T4y-locs']
+TI = ['A']
+Vhub = [11.4]
+Shear = [0.1]
+locs = [-800, -1600,-800, 0 , 800, 0, 800, 1600]
+data = TI + Vhub +Shear +locs
 if Ranges == False:
-    ParamVals = pd.read_csv(os.getcwd() + '\SampleFiles\ParamValues.csv', header=None,index_col=0,delimiter=',')
-    
+    ParamVals = pd.DataFrame(data, index = indexes)
     nCases = int(ParamVals.shape[1])
 else:
     #writeParamVals()
@@ -94,7 +100,7 @@ for case in ['Case00']:#caseNames:
 
             TurbLoc_rel=ylocs[wt]+Width/2.
 
-            fileOut = abspath+'USRTimeSeries_T{0}.txt'.format(wt)
+            fileOut = abspath+'\\USRTimeSeries_T{0}.txt'.format(wt)
 
             uvel = np.zeros(lowTime.shape[0])
             vvel = np.zeros(lowTime.shape[0])
